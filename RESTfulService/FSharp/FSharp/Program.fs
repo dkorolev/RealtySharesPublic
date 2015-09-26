@@ -1,6 +1,6 @@
 ﻿open System
 open Suave
-open HttpClient
+open FSharp.Data
 open FsUnit
 open NUnit.Framework
 
@@ -20,7 +20,7 @@ type UnitTest() =
     [<Test>]
     member this.ReturnsOK() =
         let server = spawn_server service_routes
-        "OK!\n" |> should equal <| (createRequest Get (sprintf "http://localhost:%d/" port) |> getResponseBody)
+        "OK!\n" |> should equal <| Http.RequestString(sprintf "http://localhost:%d/" port)
         server.Dispose() |> ignore
 
 [<EntryPoint>]
