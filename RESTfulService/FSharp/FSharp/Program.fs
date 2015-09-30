@@ -53,30 +53,38 @@ and RepeatRequestPOST = {
 // Data dictionary for API responses, HTTP level.
 type APIResponse =
     | BadRequest of BadRequest
-    | Subtract of SubtractResult
-    | Repeat of RepeatResult
+    | AddResponse of AddResponse
+    | SubtractResponse of SubtractResponse
+    | RepeatResponse of RepeatResponse
 and BadRequest = {
     error : string
 }
-and SubtractResult = {
+and AddResponse = {
+    sum : int
+}
+and SubtractResponse = {
     result : int
 }
-and RepeatResult = {
+and RepeatResponse = {
     result : string
 }
 
 // Business logic.
 let run_api_call (data : APIEndpoint) : APIResponse =
     match data with
-    | GET_subtract x -> Subtract { result = (x.a - x.b) }
-    | POST_repeat x -> if x.n >= 1 then Repeat { result = Seq.map (fun _ -> x.s) [1 .. x.n] |> Seq.reduce (+) }
-                                   else BadRequest { error = "Parameter 'n' should not be negative." }
+    | GET_add x -> AddResponse { sum = (x.a + x.b) }
+    | GET_subtract x -> SubtractResponse { result = (x.a - x.b) }
+    | POST_repeat x ->
+        if x.n >= 1
+        then RepeatResponse { result = Seq.map (fun _ -> x.s) [1 .. x.n] |> Seq.reduce (+) }
+        else BadRequest { error = "Parameter 'n' should not be negative." }
     | _ -> BadRequest { error = "Not implemented." }
 
 let format_api_response (response : APIResponse) =
     match response with
     | BadRequest error -> RequestErrors.BAD_REQUEST <| ToJSON error
-    | Subtract x -> Successful.OK <| ToJSON x
+    | AddResponse x -> Successful.OK <| ToJSON x
+    | SubtractResponse x -> Successful.OK <| ToJSON x
     | response -> Successful.OK <| ToJSON response
 
 // Server configuration.
@@ -251,13 +259,18 @@ type UnitTest() =
 
     // API endpoints test.
     [<Test>]
+    member this.``API: GET /add``() =
+        """{"sum":5}"""
+        |> should equal
+        <| Http.RequestString(sprintf "http://localhost:%d/add?a=2&b=3" port)
+    [<Test>]
     member this.``API: GET /subtract``() =
         """{"result":4}"""
         |> should equal
         <| Http.RequestString(sprintf "http://localhost:%d/subtract?a=5&b=1" port)
     [<Test>]
     member this.``API: POST /repeat``() =
-        """{"Case":"Repeat","Fields":[{"result":"foofoofoo"}]}"""
+        """{"Case":"RepeatResponse","Fields":[{"result":"foofoofoo"}]}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/repeat" port),
                               httpMethod = "POST",
