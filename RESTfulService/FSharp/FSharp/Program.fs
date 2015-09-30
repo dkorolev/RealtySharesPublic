@@ -55,6 +55,9 @@ type APIResponse =
     | BadRequest of BadRequest
     | AddResponse of AddResponse
     | SubtractResponse of SubtractResponse
+    | ConcatenateResponse of ConcatenateResponse
+    | MultiplyResponse of MultiplyResponse
+    | DivideResponse of DivideResponse
     | RepeatResponse of RepeatResponse
 and BadRequest = {
     error : string
@@ -65,6 +68,15 @@ and AddResponse = {
 and SubtractResponse = {
     result : int
 }
+and ConcatenateResponse = {
+    concatenated : string
+}
+and MultiplyResponse = {
+    product : int
+}
+and DivideResponse = {
+    result : double
+}
 and RepeatResponse = {
     result : string
 }
@@ -74,18 +86,31 @@ let run_api_call (data : APIEndpoint) : APIResponse =
     match data with
     | GET_add x -> AddResponse { sum = (x.a + x.b) }
     | GET_subtract x -> SubtractResponse { result = (x.a - x.b) }
+    | GET_concatenate x -> ConcatenateResponse { concatenated = (x.p + x.q) }
+    | POST_multiply x -> MultiplyResponse { product = (x.x * x.y) }
+    | POST_divide x ->
+        if x.y <> 0
+        then DivideResponse { result = (double(x.x) / double(x.y)) }
+        else BadRequest { error = "Parameter 'y' should not be zero." }
     | POST_repeat x ->
         if x.n >= 1
         then RepeatResponse { result = Seq.map (fun _ -> x.s) [1 .. x.n] |> Seq.reduce (+) }
-        else BadRequest { error = "Parameter 'n' should not be negative." }
+        else BadRequest { error = "Parameter 'n' should be positive." }
     | _ -> BadRequest { error = "Not implemented." }
 
 let format_api_response (response : APIResponse) =
     match response with
     | BadRequest error -> RequestErrors.BAD_REQUEST <| ToJSON error
+    // All responses of specific types are returned as plain JSON-s of their underlying data.
     | AddResponse x -> Successful.OK <| ToJSON x
+    | ConcatenateResponse x -> Successful.OK <| ToJSON x
     | SubtractResponse x -> Successful.OK <| ToJSON x
-    | response -> Successful.OK <| ToJSON response
+    | MultiplyResponse x -> Successful.OK <| ToJSON x
+    | DivideResponse x -> Successful.OK <| ToJSON x
+    | RepeatResponse x -> Successful.OK <| ToJSON x
+    // The final route matches any `APIResponse`, will return it with `{"Case":"...","Fields":[...]}`.
+    // It is commented out now, since all possible response types are handled above.
+    // | response -> Successful.OK <| ToJSON response
 
 // Server configuration.
 let port = 8083
@@ -225,8 +250,7 @@ let spawn_server routes =
 type UnitTest() =
     // Test setup.
     [<TestFixtureSetUp>]
-    member this.``Bring up the server``() =
-        ignore <| spawn_server app
+    member this.``Bring up the server``() = ignore <| spawn_server app
 
     // Demo endpoints test.
     [<Test>]
@@ -269,15 +293,42 @@ type UnitTest() =
         |> should equal
         <| Http.RequestString(sprintf "http://localhost:%d/subtract?a=5&b=1" port)
     [<Test>]
+    member this.``API: GET /concatenate``() =
+        """{"concatenated":"foo bar"}"""
+        |> should equal
+        <| Http.RequestString(sprintf "http://localhost:%d/concatenate?p=foo%s&q=bar" port "%20")
+    [<Test>]
+    member this.``API: POST /multiply``() =
+        """{"product":35}"""
+        |> should equal
+        <| Http.RequestString((sprintf "http://localhost:%d/multiply" port),
+                              httpMethod = "POST",
+                              body = TextRequest """{"x":5,"y":7}""")
+    [<Test>]
+    member this.``API: POST /divide``() =
+        """{"result":1.25}"""
+        |> should equal
+        <| Http.RequestString((sprintf "http://localhost:%d/divide" port),
+                              httpMethod = "POST",
+                              body = TextRequest """{"x":5,"y":4}""")
+    [<Test>]
+    member this.``API: POST /divide with invalid data``() =
+        """{"error":"Parameter 'y' should not be zero."}"""
+        |> should equal
+        <| Http.RequestString((sprintf "http://localhost:%d/divide" port),
+                              httpMethod = "POST",
+                              body = TextRequest """{"x":100,"n":0}""",
+                              silentHttpErrors = true)
+    [<Test>]
     member this.``API: POST /repeat``() =
-        """{"Case":"RepeatResponse","Fields":[{"result":"foofoofoo"}]}"""
+        """{"result":"foofoofoo"}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/repeat" port),
                               httpMethod = "POST",
                               body = TextRequest """{"s":"foo","n":3}""")
     [<Test>]
     member this.``API: POST /repeat with invalid data``() =
-        """{"error":"Parameter 'n' should not be negative."}"""
+        """{"error":"Parameter 'n' should be positive."}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/repeat" port),
                               httpMethod = "POST",
