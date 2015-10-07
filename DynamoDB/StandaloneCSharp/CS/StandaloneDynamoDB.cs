@@ -251,7 +251,7 @@ namespace CS
 
             var command = (args.Length >= 1 ? args[0].ToLower() : "");
             while (command == "") {
-                Console.Write("Now, enter a command: ");
+                Console.Write("As you didn't provide a command from command line, enter it now: ");
                 command = Console.ReadLine().ToLower();
             }
 
