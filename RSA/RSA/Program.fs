@@ -25,7 +25,7 @@ let main argv =
     | [| "decrypt"; pri; input; output |] -> DecryptMsg pri input output
     | _ -> printfn """Synopsis:
 RSA genkey  <output public  key file name> <output private key file name>
-RSA encrypt <input  public  key file name> <input  file to encrypt> <output encrypted file>
-RSA decrypt <input  private key file name> <input  file to decrypt> <output decrypted file>
+RSA encrypt <input  public  key file name> <input file to encrypt> <output encrypted file>
+RSA decrypt <input  private key file name> <input file to decrypt> <output decrypted file>
 """
     0
