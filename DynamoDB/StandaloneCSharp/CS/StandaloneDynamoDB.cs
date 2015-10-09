@@ -8,6 +8,10 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 
+using System.Reactive;
+using System.Reactive.Subjects;
+using System.Reactive.Linq;
+
 namespace CS
 {
     class DynamoDB
@@ -191,6 +195,19 @@ namespace CS
         }
 
         public void CommandSubscribe() {
+            IDisposable stream = DoSubscribe().Subscribe(
+                x => Console.WriteLine("{0}: {1}", x.Item1, x.Item2),
+                ex => Console.WriteLine("Error: {0}", ex.Message),
+                () => Console.WriteLine("Done."));
+            Console.ReadLine();
+            stream.Dispose();
+        }
+
+        private IObservable<Tuple<Int64, string>> DoSubscribe() {
+            return DoSubscribeAsEnumerable().ToObservable();
+        }
+
+        private IEnumerable<Tuple<Int64, string>> DoSubscribeAsEnumerable() {
             Table replyTable = Table.LoadTable(client, tableName);
 
             Console.WriteLine("Listening to the events continuously.");
@@ -207,7 +224,7 @@ namespace CS
                 do {
                     documentList = search.GetNextSet();
                     foreach (var document in documentList) {
-                        Console.WriteLine("{0} : {1}", document["K"], document["V"]);
+                        yield return new Tuple<Int64, string>((Int64)document["K"], document["V"]);
                         Int64 current_key = Int64.Parse(document["K"].AsString());
                         if (!(current_key > last_key)) {
                             Console.WriteLine("ERROR: {0} should be > {1}.", current_key, last_key);
