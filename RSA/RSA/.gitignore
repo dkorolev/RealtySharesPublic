@@ -1,0 +1,9 @@
+# Files used by the shell test.
+
+Program.exe
+
+input.txt
+encrypted.txt
+output.txt
+key_private.xml
+key_public.xml
