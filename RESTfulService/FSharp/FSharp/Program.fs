@@ -283,36 +283,36 @@ type UnitTest() =
 
     // API endpoints test.
     [<Test>]
-    let ``API: GET /add``() =
+    member this.``API: GET /add``() =
         """{"sum":5}"""
         |> should equal
         <| Http.RequestString(sprintf "http://localhost:%d/add?a=2&b=3" port)
     [<Test>]
-    let ``API: GET /subtract``() =
+    member this.``API: GET /subtract``() =
         """{"result":4}"""
         |> should equal
         <| Http.RequestString(sprintf "http://localhost:%d/subtract?a=5&b=1" port)
     [<Test>]
-    let ``API: GET /concatenate``() =
+    member this.``API: GET /concatenate``() =
         """{"concatenated":"foo bar"}"""
         |> should equal
         <| Http.RequestString(sprintf "http://localhost:%d/concatenate?p=foo%s&q=bar" port "%20")
     [<Test>]
-    let ``API: POST /multiply``() =
+    member this.``API: POST /multiply``() =
         """{"product":35}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/multiply" port),
                               httpMethod = "POST",
                               body = TextRequest """{"x":5,"y":7}""")
     [<Test>]
-    let ``API: POST /divide``() =
+    member this.``API: POST /divide``() =
         """{"result":1.25}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/divide" port),
                               httpMethod = "POST",
                               body = TextRequest """{"x":5,"y":4}""")
     [<Test>]
-    let ``API: POST /divide with invalid data``() =
+    member this.``API: POST /divide with invalid data``() =
         """{"error":"Parameter 'y' should not be zero."}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/divide" port),
@@ -320,14 +320,14 @@ type UnitTest() =
                               body = TextRequest """{"x":100,"n":0}""",
                               silentHttpErrors = true)
     [<Test>]
-    let ``API: POST /repeat``() =
+    member this.``API: POST /repeat``() =
         """{"result":"foofoofoo"}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/repeat" port),
                               httpMethod = "POST",
                               body = TextRequest """{"s":"foo","n":3}""")
     [<Test>]
-    let ``API: POST /repeat with invalid data``() =
+    member this.``API: POST /repeat with invalid data``() =
         """{"error":"Parameter 'n' should be positive."}"""
         |> should equal
         <| Http.RequestString((sprintf "http://localhost:%d/repeat" port),
