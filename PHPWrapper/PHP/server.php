@@ -6,9 +6,17 @@
 // To test it from bash:
 // $ curl -s -w "\n%{http_code}\n" -d '{"a":1,"b":42}' localhost:8000/add
 //
+// For PHP, on Linux, you'll need:
+// $ sudop apt-get install php5-json
+//
+// For PHP, on Windows/Cygwin, you'll need:
+// $ apt-cyg install php-json
+//
 // The rest is F#.
 
 define("LOG_FILENAME", "php-log.txt");
+
+date_default_timezone_set("America/Los_Angeles");
 
 function appendToLog($ref, $s) {
   $f = fopen(LOG_FILENAME, "a") or die("Cannot open '" . LOG_FILENAME . "' for appending.\n");
