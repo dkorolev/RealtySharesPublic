@@ -7,7 +7,7 @@
 // $ curl -s -w "\n%{http_code}\n" -d '{"a":1,"b":42}' localhost:8000/add
 //
 // For PHP, on Linux, you'll need:
-// $ sudop apt-get install php5-json
+// $ sudo apt-get install php5-json
 //
 // For PHP, on Windows/Cygwin, you'll need:
 // $ apt-cyg install php-json
