@@ -31,9 +31,12 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Program.fs" />
     <Content Include="app.config" />
     <Content Include="packages.config" />
+    <Compile Include="PHPModule.fs" />
+    <None Include="Scratchpad.fsx" />
+    <Compile Include="UnitTest.fs" />
+    <Compile Include="EntryPoint.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

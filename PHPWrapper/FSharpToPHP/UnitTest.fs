@@ -1,23 +1,12 @@
-﻿open System
+﻿module UnitTest
+
+open PHPModule
+
+open System
 open FSharp.Data
 open FsUnit
 open NUnit.Framework
 open Newtonsoft.Json
-
-let port = 8000
-
-type AddRequest = {
-    a : int
-    b : int
-}
-
-type SumResponse = {
-    sum : int
-}
-
-type ErrorResponse = {
-    error : string
-}
 
 [<Test>]
 let ``Adds correctly.``() =
@@ -85,18 +74,3 @@ let ``Explains the resource is not found.``() =
     match parsed_response with
     | Some value -> "Not found." |> should equal <| value.error
     | None -> failwith "Should return an error."
-
-let phpAdd a b =
-    printfn "Adding %d and %d using the PHP server." a b
-    let response = (Http.RequestString((sprintf "http://localhost:%d/add" port),
-                                       httpMethod = "POST",
-                                       body = (TextRequest (JsonConvert.SerializeObject({ a =a ; b = b })))))
-    try (Some (JsonConvert.DeserializeObject<SumResponse> response))
-    with :? JsonException -> None
-
-[<EntryPoint>]
-let main argv =
-    match phpAdd 2 2 with
-    | Some v -> printfn "OK: %d" v.sum
-    | None -> printfn "Error."
-    0
