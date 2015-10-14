@@ -9,3 +9,7 @@ Reference code for an F# HTTP server, with data dictionaries for incoming GET an
 ## `DynamoDB`
 
 DynamoDB interfacing reference code.
+
+## `PHPWrapper`
+
+A simple F# <=> PHP wrapper to run SOAP from F# running from under mono in Linux.
