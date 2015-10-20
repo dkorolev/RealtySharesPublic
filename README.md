@@ -13,3 +13,7 @@ DynamoDB interfacing reference code.
 ## `RSA`
 
 RSA key generation, encryption, and decryption code. Using only .NET native libraries.
+
+## `PHPWrapper`
+
+A simple F# <=> PHP wrapper to run SOAP from F# running from under mono in Linux.
