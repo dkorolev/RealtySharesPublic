@@ -29,7 +29,7 @@ let main argv =
         try 
             async {
                 let inserts = 
-                    [0..1000]
+                    [1..1000]
                     |> List.mapi (fun index version -> save table index version (sprintf "version %d" version))
                 for entry in inserts do 
                     let! _ = entry
